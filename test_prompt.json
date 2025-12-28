@@ -1,0 +1,12 @@
+{
+  "model": "llama3.1:8b",
+  "prompt": "You are a creative publishing expert and cultural trend analyst.\n\nGenerate 2 MEMORABLE, UNIQUE book ideas for the \"personal development\" niche.\n\nEach idea should:\n- Challenge conventional wisdom in the niche\n- Offer a fresh perspective or synthesis of ideas\n- Have viral potential (quotable insights, shareable concepts)\n- Be commercially viable yet intellectually ambitious\n\nFor each book idea, provide:\n1. Title: Catchy, provocative, memorable\n2. Hook: A 2-3 sentence value proposition that makes readers say \"I need this\"\n3. Audience: Specific target readership\n4. Themes: 3-5 key topics\n5. Uniqueness Angle: What makes THIS book different from every other book in the niche\n6. Emotional Tone: The feeling readers should have (e.g., \"empowered\", \"enlightened\", \"entertained\")\n\nFormat as JSON array (IMPORTANT - must be valid JSON):\n[\n  {\n    \"title\": \"Book Title Here\",\n    \"hook\": \"Hook description here\",\n    \"audience\": \"Target audience here\",\n    \"themes\": [\"theme1\", \"theme2\", \"theme3\"],\n    \"uniquenessAngle\": \"What makes it different\",\n    \"emotionalTone\": \"The primary emotion\"\n  }\n]\n\nOnly output the JSON array, no additional text.",
+  "stream": false,
+  "temperature": 0.85,
+  "options": {
+    "num_predict": 2048,
+    "top_k": 40,
+    "top_p": 0.9,
+    "repeat_penalty": 1.1
+  }
+}

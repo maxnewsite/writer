@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Check Book Data</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #1e1e1e; color: #d4d4d4; }
+    pre { background: #2d2d2d; padding: 15px; border-radius: 8px; overflow-x: auto; }
+    .good { color: #4ade80; }
+    .bad { color: #ef4444; }
+    button { background: #3b82f6; color: white; border: none; padding: 10px 20px;
+             border-radius: 6px; cursor: pointer; margin: 10px 5px 10px 0; }
+    button:hover { background: #2563eb; }
+  </style>
+</head>
+<body>
+  <h1>📊 Book Data Inspector</h1>
+  <button onclick="checkBooks()">Check All Books</button>
+  <button onclick="checkDatabase()">Check Database Schema</button>
+  <div id="output"></div>
+
+  <script type="module">
+    window.checkBooks = async () => {
+      const output = document.getElementById('output');
+      output.innerHTML = '<p>Loading books from database...</p>';
+
+      try {
+        const { db } = await import('/src/renderer/src/services/database.ts');
+        const books = await db.getAllBooks();
+
+        let html = `<h2>Found ${books.length} books:</h2>`;
+
+        books.forEach((book, i) => {
+          const hasNiche = !!book.niche;
+          const hasTitle = !!book.title;
+          const nicheClass = hasNiche ? 'good' : 'bad';
+          const titleClass = hasTitle ? 'good' : 'bad';
+
+          html += `
+            <h3>Book ${i + 1}: ${book.title || '(no title)'}</h3>
+            <pre>
+ID:          ${book.id}
+Title:       <span class="${titleClass}">${book.title || 'MISSING ❌'}</span>
+Niche:       <span class="${nicheClass}">${book.niche || 'MISSING ❌'}</span>
+Description: ${book.description || '(empty)'}
+Status:      ${book.status || '(none)'}
+Created:     ${book.created_at}
+Chapters:    ${book.outline ? JSON.parse(book.outline).length : 0}
+
+<strong>Research will ${hasNiche && hasTitle ? 'RUN ✅' : 'SKIP ❌'}</strong>
+            </pre>
+          `;
+        });
+
+        if (books.length === 0) {
+          html += '<p class="bad">No books found. Create a book first!</p>';
+        }
+
+        output.innerHTML = html;
+      } catch (error) {
+        output.innerHTML = `<pre class="bad">Error: ${error.message}\n\n${error.stack}</pre>`;
+      }
+    };
+
+    window.checkDatabase = async () => {
+      const output = document.getElementById('output');
+      output.innerHTML = '<p>Checking database schema...</p>';
+
+      try {
+        const { getDatabase } = await import('/src/renderer/src/services/database.ts');
+        const db = await getDatabase();
+
+        const stores = Array.from(db.objectStoreNames);
+
+        let html = '<h2>Database Stores:</h2><ul>';
+        stores.forEach(store => {
+          html += `<li>${store} ${store === 'chapter_research' ? '✅ (Research store exists)' : ''}</li>`;
+        });
+        html += '</ul>';
+
+        const hasResearchStore = stores.includes('chapter_research');
+        if (hasResearchStore) {
+          html += '<p class="good">✅ Research store is properly configured!</p>';
+        } else {
+          html += '<p class="bad">❌ Research store missing! Database needs migration.</p>';
+          html += '<button onclick="fixDatabase()">Fix Database Schema</button>';
+        }
+
+        output.innerHTML = html;
+      } catch (error) {
+        output.innerHTML = `<pre class="bad">Error: ${error.message}\n\n${error.stack}</pre>`;
+      }
+    };
+
+    window.fixDatabase = async () => {
+      const output = document.getElementById('output');
+      if (!confirm('This will delete and recreate the database. Continue?')) return;
+
+      output.innerHTML = '<p>Deleting old database...</p>';
+
+      await new Promise(resolve => {
+        const req = indexedDB.deleteDatabase('book-writer');
+        req.onsuccess = resolve;
+        req.onerror = resolve;
+      });
+
+      output.innerHTML = '<p class="good">Database deleted. Refreshing page to recreate...</p>';
+      setTimeout(() => location.reload(), 1000);
+    };
+
+    // Auto-run on load
+    window.addEventListener('load', () => {
+      checkBooks();
+    });
+  </script>
+</body>
+</html>

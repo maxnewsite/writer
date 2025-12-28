@@ -1,0 +1,9 @@
+﻿node_modules/
+dist/
+build/
+release/
+out/
+.vite/
+.env
+.env.*
+.claude/

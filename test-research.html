@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Service Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    button:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .status.loading {
+      background: #dbeafe;
+      border-left: 4px solid #3b82f6;
+      color: #1e40af;
+    }
+    .status.success {
+      background: #d1fae5;
+      border-left: 4px solid #10b981;
+      color: #065f46;
+    }
+    .status.error {
+      background: #fee2e2;
+      border-left: 4px solid #ef4444;
+      color: #991b1b;
+    }
+    .results {
+      margin-top: 20px;
+    }
+    .result-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f9fafb;
+      border-radius: 8px;
+    }
+    .result-section h3 {
+      margin: 0 0 10px 0;
+      color: #374151;
+      font-size: 16px;
+    }
+    .result-section ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .result-section li {
+      margin: 5px 0;
+      color: #4b5563;
+    }
+    pre {
+      background: #1f2937;
+      color: #f3f4f6;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .log-entry {
+      margin: 3px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+    .log-time {
+      color: #6b7280;
+    }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #f3f4f6;
+      border-top: 2px solid #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔬 Research Service Test</h1>
+    <p class="subtitle">Verify the research integration is working before writing chapters</p>
+
+    <div>
+      <button id="test-api" onclick="testAPIs()">1. Test API Endpoints</button>
+      <button id="test-research" onclick="testResearch()">2. Test Research Service</button>
+      <button id="test-cache" onclick="testCache()">3. Test Caching</button>
+      <button id="clear-logs" onclick="clearLogs()">Clear Logs</button>
+    </div>
+
+    <div id="status"></div>
+    <div id="results"></div>
+    <div id="logs"></div>
+  </div>
+
+  <script type="module">
+    window.testLogs = [];
+
+    function log(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      window.testLogs.push({ timestamp, message, type });
+      updateLogsDisplay();
+    }
+
+    function updateLogsDisplay() {
+      const logsDiv = document.getElementById('logs');
+      if (window.testLogs.length === 0) {
+        logsDiv.innerHTML = '';
+        return;
+      }
+
+      const logsHtml = `
+        <div class="result-section">
+          <h3>📋 Test Logs</h3>
+          <div style="max-height: 300px; overflow-y: auto;">
+            ${window.testLogs.map(l => `
+              <div class="log-entry">
+                <span class="log-time">[${l.timestamp}]</span> ${l.message}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      logsDiv.innerHTML = logsHtml;
+    }
+
+    window.clearLogs = () => {
+      window.testLogs = [];
+      document.getElementById('logs').innerHTML = '';
+      document.getElementById('results').innerHTML = '';
+      document.getElementById('status').innerHTML = '';
+    };
+
+    window.testAPIs = async () => {
+      const statusDiv = document.getElementById('status');
+      const resultsDiv = document.getElementById('results');
+
+      statusDiv.innerHTML = '<div class="status loading"><span class="spinner"></span>Testing API endpoints...</div>';
+      log('🧪 Starting API endpoint tests');
+
+      const results = {
+        duckduckgo: { success: false, data: null, error: null },
+        wikipedia: { success: false, data: null, error: null }
+      };
+
+      // Test DuckDuckGo
+      try {
+        log('Testing DuckDuckGo API...');
+        const ddgUrl = 'https://api.duckduckgo.com/?q=artificial%20intelligence%20statistics&format=json&no_html=1&skip_disambig=1';
+        const response = await fetch(ddgUrl);
+        const data = await response.json();
+
+        results.duckduckgo.success = response.ok;
+        results.duckduckgo.data = {
+          heading: data.Heading || 'N/A',
+          abstract: data.Abstract ? data.Abstract.substring(0, 100) + '...' : 'No abstract',
+          relatedTopics: data.RelatedTopics?.length || 0
+        };
+        log('✅ DuckDuckGo API: Success');
+      } catch (error) {
+        results.duckduckgo.error = error.message;
+        log('❌ DuckDuckGo API: Failed - ' + error.message);
+      }
+
+      // Test Wikipedia
+      try {
+        log('Testing Wikipedia API...');
+        const wikiUrl = 'https://en.wikipedia.org/api/rest_v1/page/summary/Artificial_intelligence';
+        const response = await fetch(wikiUrl);
+        const data = await response.json();
+
+        results.wikipedia.success = response.ok;
+        results.wikipedia.data = {
+          title: data.title || 'N/A',
+          extract: data.extract ? data.extract.substring(0, 100) + '...' : 'No extract'
+        };
+        log('✅ Wikipedia API: Success');
+      } catch (error) {
+        results.wikipedia.error = error.message;
+        log('❌ Wikipedia API: Failed - ' + error.message);
+      }
+
+      // Display results
+      const allSuccess = results.duckduckgo.success && results.wikipedia.success;
+
+      if (allSuccess) {
+        statusDiv.innerHTML = '<div class="status success">✅ All API endpoints are accessible!</div>';
+        log('✅ All API tests passed');
+      } else {
+        statusDiv.innerHTML = '<div class="status error">⚠️ Some API endpoints failed. Check results below.</div>';
+        log('⚠️ Some API tests failed');
+      }
+
+      resultsDiv.innerHTML = `
+        <div class="results">
+          <div class="result-section">
+            <h3>🦆 DuckDuckGo API ${results.duckduckgo.success ? '✅' : '❌'}</h3>
+            ${results.duckduckgo.success ? `
+              <ul>
+                <li>Heading: ${results.duckduckgo.data.heading}</li>
+                <li>Abstract: ${results.duckduckgo.data.abstract}</li>
+                <li>Related Topics: ${results.duckduckgo.data.relatedTopics}</li>
+              </ul>
+            ` : `
+              <p style="color: #dc2626;">Error: ${results.duckduckgo.error}</p>
+            `}
+          </div>
+
+          <div class="result-section">
+            <h3>📚 Wikipedia API ${results.wikipedia.success ? '✅' : '❌'}</h3>
+            ${results.wikipedia.success ? `
+              <ul>
+                <li>Title: ${results.wikipedia.data.title}</li>
+                <li>Extract: ${results.wikipedia.data.extract}</li>
+              </ul>
+            ` : `
+              <p style="color: #dc2626;">Error: ${results.wikipedia.error}</p>
+            `}
+          </div>
+        </div>
+      `;
+    };
+
+    window.testResearch = async () => {
+      const statusDiv = document.getElementById('status');
+      const resultsDiv = document.getElementById('results');
+
+      statusDiv.innerHTML = '<div class="status loading"><span class="spinner"></span>Running research for test chapter...</div>';
+      log('🔬 Starting research service test');
+
+      try {
+        // Dynamically import the research service
+        log('Importing research service...');
+        const { researchService } = await import('/src/renderer/src/services/researchService.ts');
+
+        log('Starting research for: "Introduction to Machine Learning"');
+        const startTime = Date.now();
+
+        const research = await researchService.researchForChapter(
+          'Introduction to Machine Learning',
+          'An overview of machine learning fundamentals, applications, and current trends',
+          'Artificial Intelligence',
+          'AI Fundamentals Book',
+          (status) => log('  📍 ' + status)
+        );
+
+        const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+        log(`✅ Research completed in ${duration}s`);
+
+        statusDiv.innerHTML = `<div class="status success">✅ Research completed successfully in ${duration}s!</div>`;
+
+        resultsDiv.innerHTML = `
+          <div class="results">
+            <div class="result-section">
+              <h3>📊 Research Summary</h3>
+              <p>${research.summary}</p>
+            </div>
+
+            <div class="result-section">
+              <h3>📈 Key Statistics (${research.keyStatistics.length})</h3>
+              <ul>
+                ${research.keyStatistics.map(s => `<li>${s}</li>`).join('') || '<li>No statistics found</li>'}
+              </ul>
+            </div>
+
+            <div class="result-section">
+              <h3>🔮 Recent Trends (${research.recentTrends.length})</h3>
+              <ul>
+                ${research.recentTrends.map(t => `<li>${t}</li>`).join('') || '<li>No trends found</li>'}
+              </ul>
+            </div>
+
+            <div class="result-section">
+              <h3>💡 Notable Quotes (${research.notableQuotes.length})</h3>
+              <ul>
+                ${research.notableQuotes.map(q => `<li>${q}</li>`).join('') || '<li>No quotes found</li>'}
+              </ul>
+            </div>
+
+            <div class="result-section">
+              <h3>📚 Research Metadata</h3>
+              <ul>
+                <li>Chapter: ${research.chapterTitle}</li>
+                <li>Book: ${research.bookTitle}</li>
+                <li>Niche: ${research.bookNiche}</li>
+                <li>Researched at: ${new Date(research.researchedAt).toLocaleString()}</li>
+                <li>Total research queries: ${research.research.length}</li>
+              </ul>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        log('❌ Research failed: ' + error.message);
+        statusDiv.innerHTML = `<div class="status error">❌ Research failed: ${error.message}</div>`;
+        resultsDiv.innerHTML = `<pre>${error.stack}</pre>`;
+      }
+    };
+
+    window.testCache = async () => {
+      const statusDiv = document.getElementById('status');
+      const resultsDiv = document.getElementById('results');
+
+      statusDiv.innerHTML = '<div class="status loading"><span class="spinner"></span>Testing research caching...</div>';
+      log('🗂️ Starting cache test');
+
+      try {
+        const { researchService } = await import('/src/renderer/src/services/researchService.ts');
+
+        const testTopic = {
+          title: 'Neural Networks Fundamentals',
+          description: 'Overview of neural network architecture',
+          niche: 'Deep Learning',
+          bookTitle: 'Deep Learning Guide'
+        };
+
+        // First call - should fetch fresh
+        log('First call (fresh research)...');
+        const start1 = Date.now();
+        const research1 = await researchService.researchForChapter(
+          testTopic.title,
+          testTopic.description,
+          testTopic.niche,
+          testTopic.bookTitle,
+          (status) => log('  📍 ' + status)
+        );
+        const time1 = Date.now() - start1;
+        log(`✓ First call completed in ${time1}ms`);
+
+        // Second call - should use cache
+        log('Second call (should be cached)...');
+        const start2 = Date.now();
+        const research2 = await researchService.researchForChapter(
+          testTopic.title,
+          testTopic.description,
+          testTopic.niche,
+          testTopic.bookTitle,
+          (status) => log('  📍 ' + status)
+        );
+        const time2 = Date.now() - start2;
+        log(`✓ Second call completed in ${time2}ms`);
+
+        const speedup = (time1 / time2).toFixed(1);
+        const isCached = time2 < 1000; // Less than 1 second suggests caching
+
+        if (isCached) {
+          log(`✅ Cache working! ${speedup}x faster`);
+          statusDiv.innerHTML = `<div class="status success">✅ Caching works! Second call was ${speedup}x faster (${time2}ms vs ${time1}ms)</div>`;
+        } else {
+          log(`⚠️ Cache might not be working - both calls took similar time`);
+          statusDiv.innerHTML = `<div class="status error">⚠️ Cache might not be working. Both calls took similar time.</div>`;
+        }
+
+        resultsDiv.innerHTML = `
+          <div class="results">
+            <div class="result-section">
+              <h3>⏱️ Performance Comparison</h3>
+              <ul>
+                <li>First call (fresh): ${time1}ms</li>
+                <li>Second call (cached): ${time2}ms</li>
+                <li>Speedup: ${speedup}x</li>
+                <li>Cache status: ${isCached ? '✅ Working' : '❌ Not working'}</li>
+              </ul>
+            </div>
+
+            <div class="result-section">
+              <h3>🔍 Data Comparison</h3>
+              <ul>
+                <li>Statistics match: ${JSON.stringify(research1.keyStatistics) === JSON.stringify(research2.keyStatistics) ? '✅' : '❌'}</li>
+                <li>Trends match: ${JSON.stringify(research1.recentTrends) === JSON.stringify(research2.recentTrends) ? '✅' : '❌'}</li>
+                <li>Summary match: ${research1.summary === research2.summary ? '✅' : '❌'}</li>
+              </ul>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        log('❌ Cache test failed: ' + error.message);
+        statusDiv.innerHTML = `<div class="status error">❌ Cache test failed: ${error.message}</div>`;
+        resultsDiv.innerHTML = `<pre>${error.stack}</pre>`;
+      }
+    };
+
+    // Auto-test APIs on load
+    window.addEventListener('load', () => {
+      log('🚀 Research Service Test Page Loaded');
+      log('Click buttons above to run tests');
+    });
+  </script>
+</body>
+</html>
