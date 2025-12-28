@@ -4,7 +4,6 @@ import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  root: 'src/renderer',
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src/renderer/src')
@@ -15,8 +14,11 @@ export default defineConfig({
     strictPort: false
   },
   build: {
-    outDir: '../../dist',
-    emptyOutDir: true
+    outDir: 'dist',
+    emptyOutDir: true,
+    rollupOptions: {
+      input: resolve(__dirname, 'src/renderer/index.html')
+    }
   },
   base: '/'
 })
