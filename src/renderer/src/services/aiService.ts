@@ -485,9 +485,9 @@ ${CLEAN_WRITING_STYLE}`
       ? await this.generateCalibratedPersonas(bookNiche, bookTitle)
       : this.getDefaultPersonas('general')
 
-    const personaList = personas
-      .map((p, i) => `${i + 1}. **${p.name}** - ${p.description}. Focus: ${p.focusArea}. Style: ${p.questionStyle}`)
-      .join('\n')
+    // const personaList = personas
+    //   .map((p, i) => `${i + 1}. **${p.name}** - ${p.description}. Focus: ${p.focusArea}. Style: ${p.questionStyle}`)
+    //   .join('\n')
 
     // Try a direct, simple approach that's easier for the AI
     const personaPrompt = `You are generating reader questions. Below are ${personas.length} different reader personas who just read a chapter.
@@ -673,7 +673,7 @@ Generate all ${personaQuestions.length} voting lines (format: "PersonaName votes
         const numbers = line.match(/\d+/g)
         if (numbers && numbers.length >= 2) {
           console.log(`      ⚠️ Using fallback parsing - found numbers: ${numbers.join(', ')}`)
-          match = [null, numbers[0], numbers[1]] as RegExpMatchArray
+          match = ['', numbers[0], numbers[1]] as RegExpMatchArray
         }
       }
 
